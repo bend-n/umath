@@ -58,6 +58,10 @@ impl<T: FastFloat> FFloat<T> {
         debug_assert!(!from.bad());
         Self(from)
     }
+
+    fn check(self) {
+        debug_assert!(!self.bad());
+    }
 }
 
 impl<T> Deref for FFloat<T> {
@@ -80,6 +84,7 @@ macro_rules! op {
             type Output = FFloat<T>;
 
             fn $name(self, rhs: T) -> Self::Output {
+                self.check();
                 unsafe { Self::new(T::$name(self.0, rhs)) }
             }
         }
@@ -88,6 +93,7 @@ macro_rules! op {
             type Output = FFloat<T>;
 
             fn $name(self, rhs: &T) -> Self::Output {
+                self.check();
                 unsafe { Self::new(T::$name(self.0, *rhs)) }
             }
         }
@@ -95,6 +101,7 @@ macro_rules! op {
         impl<T: FastFloat> $name for FFloat<T> {
             type Output = FFloat<T>;
             fn $name(self, FFloat(rhs): FFloat<T>) -> Self::Output {
+                self.check();
                 unsafe { Self::new(T::$name(self.0, rhs)) }
             }
         }
@@ -102,6 +109,7 @@ macro_rules! op {
         impl<T: FastFloat> $name<&FFloat<T>> for FFloat<T> {
             type Output = FFloat<T>;
             fn $name(self, FFloat(rhs): &FFloat<T>) -> Self::Output {
+                self.check();
                 unsafe { Self::new(T::$name(self.0, *rhs)) }
             }
         }
@@ -118,24 +126,28 @@ macro_rules! assign {
     ($name:ident, $op:ident) => {
         impl<T: FastFloat> $name<T> for FFloat<T> {
             fn $name(&mut self, rhs: T) {
+                self.check();
                 *self = unsafe { Self::new(T::$op(self.0, rhs)) };
             }
         }
 
         impl<T: FastFloat> $name<&T> for FFloat<T> {
             fn $name(&mut self, rhs: &T) {
+                self.check();
                 *self = unsafe { Self::new(T::$op(self.0, *rhs)) };
             }
         }
 
         impl<T: FastFloat> $name for FFloat<T> {
             fn $name(&mut self, FFloat(rhs): FFloat<T>) {
+                self.check();
                 *self = unsafe { Self::new(T::$op(self.0, rhs)) };
             }
         }
 
         impl<T: FastFloat> $name<&FFloat<T>> for FFloat<T> {
             fn $name(&mut self, FFloat(rhs): &FFloat<T>) {
+                self.check();
                 *self = unsafe { Self::new(T::$op(self.0, *rhs)) };
             }
         }
@@ -157,6 +169,7 @@ impl<T: FastFloat + Neg<Output = T>> Neg for FFloat<T> {
 
 impl<T: FastFloat + PartialOrd + Eq> Ord for FFloat<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.check();
         unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
     }
 }
@@ -169,6 +182,7 @@ impl<T: FastFloat + PartialEq> PartialEq<T> for FFloat<T> {
 
 impl<T: FastFloat + PartialOrd> PartialOrd<T> for FFloat<T> {
     fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
+        self.check();
         self.0.partial_cmp(other)
     }
 }
