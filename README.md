@@ -1,6 +1,7 @@
 # umath: ffast-math, for rust.
 
-![MSRV](https://img.shields.io/badge/msrv-nightly-blue?style=for-the-badge&logo=rust)
+[![MSRV](https://img.shields.io/badge/msrv-nightly-blue?style=for-the-badge&logo=rust)](#nightlyness)
+[![DOCS](https://img.shields.io/badge/docs.rs-umath-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs")](https://docs.rs/umath)
 
 Want to make your math *faster*? [<sup>*t&c apply</sup>](https://simonbyrne.github.io/notes/fastmath)
 

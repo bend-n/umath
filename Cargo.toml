@@ -7,4 +7,5 @@ repository = "https://github.com/bend-n/umath"
 authors = ["bend-n <bend.n@outlook.com>"]
 edition = "2021"
 exclude = [".gitignore"]
-categories = ["hardware-support", "mathematics",]
+categories = ["hardware-support", "mathematics", "no-std", "no-std::no-alloc"]
+keywords = ["fast", "math", "unsafe", "ffast-math", "float"]

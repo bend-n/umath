@@ -9,8 +9,9 @@
 //! ```
 #![feature(core_intrinsics)]
 #![warn(clippy::pedantic, clippy::dbg_macro, clippy::use_self, missing_docs)]
-use std::cmp::{PartialEq, PartialOrd};
-use std::ops::{
+#![no_std]
+use core::cmp::{Ordering, PartialEq, PartialOrd};
+use core::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
     Mul as mul, MulAssign as mul_assign, Neg, Rem as rem, RemAssign as rem_assign, Sub as sub,
     SubAssign as sub_assign,
@@ -33,14 +34,14 @@ use r#trait::FastFloat;
 #[derive(Copy, Clone, PartialEq)]
 pub struct FFloat<T>(T);
 
-impl<T: FastFloat> std::fmt::Debug for FFloat<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: FastFloat> core::fmt::Debug for FFloat<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{:?}", self.0)
     }
 }
 
-impl<T: FastFloat> std::fmt::Display for FFloat<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<T: FastFloat> core::fmt::Display for FFloat<T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
@@ -184,17 +185,17 @@ impl<T: FastFloat> PartialEq<T> for FFloat<T> {
 }
 impl<T: FastFloat> Eq for FFloat<T> {}
 impl<T: FastFloat> PartialOrd for FFloat<T> {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 impl<T: FastFloat> PartialOrd<T> for FFloat<T> {
-    fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &T) -> Option<Ordering> {
         self.0.partial_cmp(other)
     }
 }
 impl<T: FastFloat> Ord for FFloat<T> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> Ordering {
         self.check();
         unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
     }

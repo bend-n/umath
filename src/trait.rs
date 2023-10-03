@@ -1,9 +1,9 @@
-use std::intrinsics::{
+use core::intrinsics::{
     fadd_fast as add, fdiv_fast as div, fmul_fast as mul, frem_fast as rem, fsub_fast as sub,
 };
 macro_rules! meth {
     ($($name:ident)|+) => {
-        pub trait FastFloat: Copy + std::fmt::Display + std::fmt::Debug + std::ops::Neg<Output = Self> + std::cmp::PartialEq + std::cmp::PartialOrd {
+        pub trait FastFloat: Copy + core::fmt::Display + core::fmt::Debug + core::ops::Neg<Output = Self> + core::cmp::PartialEq + core::cmp::PartialOrd {
             $(#[doc(hidden)] unsafe fn $name(a: Self, b: Self) -> Self;)+
             #[doc(hidden)]
             fn bad(self) -> bool;
