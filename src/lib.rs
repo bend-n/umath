@@ -61,7 +61,13 @@ impl<T: FastFloat> FFloat<T> {
     }
 
     fn check(self) {
-        debug_assert!(!self.bad(), "{self} is NAN | INF.");
+        if self.bad() {
+            if cfg!(debug_assertions) {
+                panic!("{self} is NAN | INF.");
+            } else {
+                unsafe { core::hint::unreachable_unchecked() };
+            }
+        }
     }
 }
 

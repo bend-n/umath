@@ -14,7 +14,7 @@ macro_rules! meth {
                 $name(a, b)
             })+
 
-
+            #[inline(always)]
             fn bad(self) -> bool { self.is_nan() || self.is_infinite() }
         }
 
@@ -23,6 +23,7 @@ macro_rules! meth {
                 $name(a, b)
             })+
 
+            #[inline(always)]
             fn bad(self) -> bool { self.is_nan() || self.is_infinite() }
         }
     };
