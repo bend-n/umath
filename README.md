@@ -9,7 +9,7 @@ Want to *order* a float?
 
 You can do all of that, with `umath`!
 
-```rs
+```rust
 use umath::FFloat;
 // wrap a non NAN and non INF f32/f64 (we will also *never* make this number nan).
 let mut f = unsafe { FFloat::new(4.0f32) };
