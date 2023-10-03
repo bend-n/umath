@@ -174,12 +174,14 @@ assign!(sub_assign, sub);
 impl<T: FastFloat> Neg for FFloat<T> {
     type Output = Self;
     fn neg(self) -> Self::Output {
+        self.check();
         unsafe { Self::new(-self.0) }
     }
 }
 
 impl<T: FastFloat> PartialEq<T> for FFloat<T> {
     fn eq(&self, other: &T) -> bool {
+        self.check();
         self.0.eq(other)
     }
 }
@@ -191,6 +193,7 @@ impl<T: FastFloat> PartialOrd for FFloat<T> {
 }
 impl<T: FastFloat> PartialOrd<T> for FFloat<T> {
     fn partial_cmp(&self, other: &T) -> Option<Ordering> {
+        self.check();
         self.0.partial_cmp(other)
     }
 }
