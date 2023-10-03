@@ -20,6 +20,8 @@ mod r#trait;
 use r#trait::FastFloat;
 
 /// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], as it is not allowed to be [`NAN`](std::f32::NAN).
+///
+/// `FFloat<F>` is guaranteed to have the same memory layout and ABI as F.
 /// ```
 /// # use umath::FFloat;
 /// # unsafe {
@@ -27,6 +29,7 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
+#[repr(transparent)]
 #[derive(Copy, Clone, PartialEq)]
 pub struct FFloat<T>(T);
 

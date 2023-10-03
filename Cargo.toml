@@ -7,3 +7,4 @@ repository = "https://github.com/bend-n/umath"
 authors = ["bend-n <bend.n@outlook.com>"]
 edition = "2021"
 exclude = [".gitignore"]
+categories = ["hardware-support", "mathematics",]
