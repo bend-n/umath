@@ -1,0 +1,9 @@
+[package]
+name = "umath"
+version = "0.0.0"
+description = "ffast-math in rust"
+license = "MIT"
+repository = "https://github.com/bend-n/umath"
+authors = ["bend-n <bend.n@outlook.com>"]
+edition = "2021"
+exclude = [".gitignore"]
