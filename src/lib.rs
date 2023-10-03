@@ -27,16 +27,16 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
-#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct FFloat<T>(T);
 
-impl<T: FastFloat + std::fmt::Debug> std::fmt::Debug for FFloat<T> {
+impl<T: FastFloat> std::fmt::Debug for FFloat<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
     }
 }
 
-impl<T: FastFloat + std::fmt::Display> std::fmt::Display for FFloat<T> {
+impl<T: FastFloat> std::fmt::Display for FFloat<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
@@ -48,19 +48,20 @@ impl<T: FastFloat> FFloat<T> {
     ///
     /// # Safety
     ///
-    /// you must solemnly swear that your number is not [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY), and you will not make it [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY).
+    /// you must solemnly swear that your number is not [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY), and you MUST NEVER make it [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY).
     /// ```
     /// # use umath::FFloat;
     /// // SAFETY: i have verified that 7.0 is infact, not NAN or INF.
     /// let f = unsafe { FFloat::new(7.0) };
     /// ```
     pub unsafe fn new(from: T) -> Self {
-        debug_assert!(!from.bad());
-        Self(from)
+        let new = Self(from);
+        new.check();
+        new
     }
 
     fn check(self) {
-        debug_assert!(!self.bad());
+        debug_assert!(!self.bad(), "{self} is NAN | INF.");
     }
 }
 
@@ -160,29 +161,29 @@ assign!(rem_assign, rem);
 assign!(sub_assign, sub);
 
 // convenience
-impl<T: FastFloat + Neg<Output = T>> Neg for FFloat<T> {
+impl<T: FastFloat> Neg for FFloat<T> {
     type Output = FFloat<T>;
     fn neg(self) -> Self::Output {
         unsafe { Self::new(-self.0) }
     }
 }
 
-impl<T: FastFloat + PartialOrd + Eq> Ord for FFloat<T> {
+impl<T: FastFloat> Eq for FFloat<T> {}
+impl<T: FastFloat> Ord for FFloat<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.check();
         unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
     }
 }
 
-impl<T: FastFloat + PartialEq> PartialEq<T> for FFloat<T> {
+impl<T: FastFloat> PartialEq<T> for FFloat<T> {
     fn eq(&self, other: &T) -> bool {
         self.0.eq(other)
     }
 }
 
-impl<T: FastFloat + PartialOrd> PartialOrd<T> for FFloat<T> {
+impl<T: FastFloat> PartialOrd<T> for FFloat<T> {
     fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
-        self.check();
         self.0.partial_cmp(other)
     }
 }
