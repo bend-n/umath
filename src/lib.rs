@@ -26,6 +26,7 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
+#[derive(Copy, Clone, PartialEq, PartialOrd)]
 pub struct FFloat<T>(T);
 
 impl<T: FastFloat + std::fmt::Debug> std::fmt::Debug for FFloat<T> {
