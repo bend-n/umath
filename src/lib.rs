@@ -9,6 +9,7 @@
 //! ```
 #![feature(core_intrinsics)]
 #![warn(clippy::pedantic, clippy::dbg_macro, clippy::use_self, missing_docs)]
+use std::cmp::{PartialEq, PartialOrd};
 use std::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
     Mul as mul, MulAssign as mul_assign, Neg, Rem as rem, RemAssign as rem_assign, Sub as sub,
@@ -18,7 +19,7 @@ use std::ops::{
 mod r#trait;
 use r#trait::FastFloat;
 
-/// Float wrapper that uses `ffast-math`.
+/// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], as it is not allowed to be [`NAN`](std::f32::NAN).
 /// ```
 /// # use umath::FFloat;
 /// # unsafe {
@@ -26,7 +27,7 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
-#[derive(Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd)]
 pub struct FFloat<T>(T);
 
 impl<T: FastFloat + std::fmt::Debug> std::fmt::Debug for FFloat<T> {
@@ -113,13 +114,6 @@ op!(mul);
 op!(rem);
 op!(sub);
 
-impl<T: FastFloat + Neg<Output = T>> Neg for FFloat<T> {
-    type Output = FFloat<T>;
-    fn neg(self) -> Self::Output {
-        unsafe { Self::new(-self.0) }
-    }
-}
-
 macro_rules! assign {
     ($name:ident, $op:ident) => {
         impl<T: FastFloat> $name<T> for FFloat<T> {
@@ -152,6 +146,32 @@ assign!(div_assign, div);
 assign!(mul_assign, mul);
 assign!(rem_assign, rem);
 assign!(sub_assign, sub);
+
+// convenience
+impl<T: FastFloat + Neg<Output = T>> Neg for FFloat<T> {
+    type Output = FFloat<T>;
+    fn neg(self) -> Self::Output {
+        unsafe { Self::new(-self.0) }
+    }
+}
+
+impl<T: FastFloat + PartialOrd + Eq> Ord for FFloat<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
+    }
+}
+
+impl<T: FastFloat + PartialEq> PartialEq<T> for FFloat<T> {
+    fn eq(&self, other: &T) -> bool {
+        self.0.eq(other)
+    }
+}
+
+impl<T: FastFloat + PartialOrd> PartialOrd<T> for FFloat<T> {
+    fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
+        self.0.partial_cmp(other)
+    }
+}
 
 #[cfg(test)]
 mod tests {
