@@ -28,6 +28,18 @@ use r#trait::FastFloat;
 /// ```
 pub struct FFloat<T>(T);
 
+impl<T: FastFloat + std::fmt::Debug> std::fmt::Debug for FFloat<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl<T: FastFloat + std::fmt::Display> std::fmt::Display for FFloat<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl<T: FastFloat> FFloat<T> {
     /// Create a new [`FFloat`] from your {[`f32`], [`f64`]}.
     /// There is no checked new, because it needs to be `unsafe` so that i can make sure you will never do any funny.
