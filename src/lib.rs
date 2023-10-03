@@ -11,7 +11,7 @@
 #![warn(clippy::pedantic, clippy::dbg_macro, clippy::use_self, missing_docs)]
 use std::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
-    Mul as mul, MulAssign as mul_assign, Rem as rem, RemAssign as rem_assign, Sub as sub,
+    Mul as mul, MulAssign as mul_assign, Neg, Rem as rem, RemAssign as rem_assign, Sub as sub,
     SubAssign as sub_assign,
 };
 
@@ -112,6 +112,13 @@ op!(div);
 op!(mul);
 op!(rem);
 op!(sub);
+
+impl<T: FastFloat + Neg<Output = T>> Neg for FFloat<T> {
+    type Output = FFloat<T>;
+    fn neg(self) -> Self::Output {
+        unsafe { Self::new(-self.0) }
+    }
+}
 
 macro_rules! assign {
     ($name:ident, $op:ident) => {
