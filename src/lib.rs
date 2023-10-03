@@ -176,9 +176,7 @@ impl<T: FastFloat> PartialEq<T> for FFloat<T> {
 impl<T: FastFloat> Eq for FFloat<T> {}
 impl<T: FastFloat> PartialOrd for FFloat<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.check();
-        other.check();
-        Some(unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() })
+        Some(self.cmp(other))
     }
 }
 impl<T: FastFloat> PartialOrd<T> for FFloat<T> {

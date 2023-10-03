@@ -10,7 +10,7 @@ macro_rules! meth {
         }
 
         impl FastFloat for f32 {
-            $(unsafe fn $name(a: Self, b: Self) -> Self {
+            $(#[inline(always)] unsafe fn $name(a: Self, b: Self) -> Self {
                 $name(a, b)
             })+
 
@@ -19,7 +19,7 @@ macro_rules! meth {
         }
 
         impl FastFloat for f64 {
-            $(unsafe fn $name(a: Self, b: Self) -> Self {
+            $(#[inline(always)] unsafe fn $name(a: Self, b: Self) -> Self {
                 $name(a, b)
             })+
 
