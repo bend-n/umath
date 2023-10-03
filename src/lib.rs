@@ -27,7 +27,7 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
-#[derive(Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct FFloat<T>(T);
 
 impl<T: FastFloat> std::fmt::Debug for FFloat<T> {
@@ -162,17 +162,9 @@ assign!(sub_assign, sub);
 
 // convenience
 impl<T: FastFloat> Neg for FFloat<T> {
-    type Output = FFloat<T>;
+    type Output = Self;
     fn neg(self) -> Self::Output {
         unsafe { Self::new(-self.0) }
-    }
-}
-
-impl<T: FastFloat> Eq for FFloat<T> {}
-impl<T: FastFloat> Ord for FFloat<T> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.check();
-        unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
     }
 }
 
@@ -181,10 +173,23 @@ impl<T: FastFloat> PartialEq<T> for FFloat<T> {
         self.0.eq(other)
     }
 }
-
+impl<T: FastFloat> Eq for FFloat<T> {}
+impl<T: FastFloat> PartialOrd for FFloat<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.check();
+        other.check();
+        Some(unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() })
+    }
+}
 impl<T: FastFloat> PartialOrd<T> for FFloat<T> {
     fn partial_cmp(&self, other: &T) -> Option<std::cmp::Ordering> {
         self.0.partial_cmp(other)
+    }
+}
+impl<T: FastFloat> Ord for FFloat<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.check();
+        unsafe { self.0.partial_cmp(&other.0).unwrap_unchecked() }
     }
 }
 

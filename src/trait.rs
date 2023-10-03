@@ -1,11 +1,9 @@
-use std::cmp::{PartialEq, PartialOrd};
 use std::intrinsics::{
     fadd_fast as add, fdiv_fast as div, fmul_fast as mul, frem_fast as rem, fsub_fast as sub,
 };
-use std::ops::Neg;
 macro_rules! meth {
     ($($name:ident)|+) => {
-        pub trait FastFloat: Copy + std::fmt::Display + std::fmt::Debug + Neg<Output = Self> + PartialEq + PartialOrd {
+        pub trait FastFloat: Copy + std::fmt::Display + std::fmt::Debug + std::ops::Neg<Output = Self> + std::cmp::PartialEq + std::cmp::PartialOrd {
             $(#[doc(hidden)] unsafe fn $name(a: Self, b: Self) -> Self;)+
             #[doc(hidden)]
             fn bad(self) -> bool;
