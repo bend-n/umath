@@ -9,18 +9,20 @@
 //! ```
 #![feature(core_intrinsics)]
 #![warn(clippy::pedantic, clippy::dbg_macro, clippy::use_self, missing_docs)]
-#![no_std]
+#![cfg_attr(not(doc), no_std)]
 use core::cmp::{Ordering, PartialEq, PartialOrd};
 use core::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
     Mul as mul, MulAssign as mul_assign, Neg, Rem as rem, RemAssign as rem_assign, Sub as sub,
     SubAssign as sub_assign,
 };
+#[cfg(doc)]
+use std::f32::{INFINITY as INF, NAN};
 
 mod r#trait;
 use r#trait::FastFloat;
 
-/// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], as it is not allowed to be [`NAN`](std::f32::NAN).
+/// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], as it is not allowed to be [`NAN`].
 ///
 /// `FFloat<F>` is guaranteed to have the same memory layout and ABI as F.
 /// ```
@@ -48,11 +50,11 @@ impl<T: FastFloat> core::fmt::Display for FFloat<T> {
 
 impl<T: FastFloat> FFloat<T> {
     /// Create a new [`FFloat`] from your {[`f32`], [`f64`]}.
-    /// There is no checked new, because it needs to be `unsafe` so that i can make sure you will never do any funny.
-    ///
     /// # Safety
     ///
-    /// you must solemnly swear that your number is not [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY), and you MUST NEVER make it [`NAN`](std::f32::NAN) | [`INF`](std::f32::INFINITY).
+    /// - You MUST NEVER call this function with [`NAN`] | [`INF`]
+    /// - You MUST NEVER make it [`NAN`] | [`INF`]
+    /// - You MUST NEVER combine a [`FFloat`] with a {[`FFloat`], [`f32`], [`f64`]}, to produce a [`NAN`] | [`INF`]
     /// ```
     /// # use umath::FFloat;
     /// // SAFETY: i have verified that 7.0 is infact, not NAN or INF.
