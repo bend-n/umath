@@ -20,6 +20,11 @@ use core::ops::{
 use std::f32::{INFINITY as INF, NAN};
 use std::hash::Hash;
 
+/// Type alias for <code>[FFloat]<[f32]></code>. (fast float 32 bits)
+pub type FF32 = FFloat<f32>;
+/// Type alias for <code>[FFloat]<[f64]></code>. (fast float 64 bits)
+pub type FF64 = FFloat<f64>;
+
 pub mod generic_float;
 mod r#trait;
 #[doc(inline)]
