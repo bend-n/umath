@@ -8,8 +8,8 @@
 //! # }
 //! ```
 #![feature(core_intrinsics)]
-#![warn(clippy::pedantic, clippy::dbg_macro, clippy::use_self, missing_docs)]
-#![cfg_attr(not(doc), no_std)]
+#![warn(clippy::pedantic, clippy::dbg_macro, missing_docs)]
+#![allow(clippy::return_self_not_must_use)]
 use core::cmp::{Ordering, PartialEq, PartialOrd};
 use core::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
@@ -18,11 +18,15 @@ use core::ops::{
 };
 #[cfg(doc)]
 use std::f32::{INFINITY as INF, NAN};
+use std::hash::Hash;
 
+pub mod generic_float;
 mod r#trait;
+#[doc(inline)]
+pub use generic_float::Float;
 use r#trait::FastFloat;
 
-/// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], as it is not allowed to be [`NAN`].
+/// Float wrapper that uses `ffast-math`. This float also implements [`Ord`], [`Hash`], and [`Eq`], as it is not allowed to be [`NAN`].
 ///
 /// `FFloat<F>` is guaranteed to have the same memory layout and ABI as F.
 /// ```
@@ -32,6 +36,10 @@ use r#trait::FastFloat;
 /// assert_eq!(*result, 1136943.0);
 /// # }
 /// ```
+///
+/// ## Safety Notice (for transmuters)
+///
+/// A [`FFloat`] is _never_ allowed to be [`NAN`] | [`INF`].
 #[repr(transparent)]
 #[derive(Copy, Clone, PartialEq)]
 pub struct FFloat<T>(T);
@@ -50,11 +58,7 @@ impl<T: FastFloat> core::fmt::Display for FFloat<T> {
 
 impl<T: FastFloat> FFloat<T> {
     /// Create a new [`FFloat`] from your {[`f32`], [`f64`]}.
-    /// # Safety
-    ///
-    /// - You MUST NEVER call this function with [`NAN`] | [`INF`]
-    /// - You MUST NEVER make it [`NAN`] | [`INF`]
-    /// - You MUST NEVER combine a [`FFloat`] with a {[`FFloat`], [`f32`], [`f64`]}, to produce a [`NAN`] | [`INF`]
+    #[doc = include_str!("ffloat_safety.md")]
     /// ```
     /// # use umath::FFloat;
     /// // SAFETY: i have verified that 7.0 is infact, not NAN or INF.
@@ -66,6 +70,11 @@ impl<T: FastFloat> FFloat<T> {
         new
     }
 
+    /// Checks if somebody else made a mistake, cause UB or panic if so.
+    /// # Safety
+    ///
+    /// This can never cause UB unless someone else made a mistake, therefore ub has already occured.
+    #[inline(always)]
     fn check(self) {
         if self.bad() {
             if cfg!(debug_assertions) {
@@ -206,12 +215,39 @@ impl<T: FastFloat> Ord for FFloat<T> {
     }
 }
 
+impl Hash for FFloat<f32> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.check();
+        state.write_u32((self.0 + 0.0).to_bits());
+    }
+}
+
+impl Hash for FFloat<f64> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.check();
+        state.write_u64((self.0 + 0.0).to_bits());
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use super::*;
     #[test]
     fn it_works() {
         let result = unsafe { FFloat::new(2.0) + FFloat::new(2.0) };
         assert_eq!(*result, 4.0);
+    }
+
+    #[test]
+    fn hashing() {
+        let mut map = HashMap::new();
+        map.insert(FFloat(2.0), "hi");
+        map.insert(FFloat(7.0), "bye");
+        map.insert(FFloat(-0.0), "edge");
+        assert!(map[&FFloat(2.0)] == "hi");
+        assert!(map[&FFloat(7.0)] == "bye");
+        assert!(map[&FFloat(0.0)] == "edge");
     }
 }

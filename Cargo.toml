@@ -1,6 +1,6 @@
 [package]
 name = "umath"
-version = "0.0.1"
+version = "0.0.3"
 description = "ffast-math in rust"
 license = "MIT"
 repository = "https://github.com/bend-n/umath"
