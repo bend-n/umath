@@ -14,23 +14,29 @@ use core::ops::{
 use std::f32::{INFINITY as INF, NAN};
 
 macro_rules! simp {
-    ($doc:literal trait $trat:ident with $($name:ident),+) => {
+    ($doc:literal trait $trat:ident with $($name:ident$(($arg:ident))?),+) => {
         #[doc = $doc]
         pub trait $trat {
             $(
                 #[doc = concat!("Refer to [`f32::", stringify!($name), "`]")]
-                fn $name(self) -> Self;
+                fn $name(self $(, $arg: Self)?) -> Self;
             )+
         }
 
-        impl $trat for f32 { $(fn $name(self) -> Self { self.$name() })+ }
-        impl $trat for f64 { $(fn $name(self) -> Self { self.$name() })+ }
-        impl<T: FastFloat + Trig + Rounding> $trat for FFloat<T> { $(fn $name(self) -> Self { unsafe { FFloat::new(self.deref().$name()) } })+ }
+        impl $trat for f32 { $(fn $name(self $(, $arg: Self)?) -> Self { self.$name($($arg)?) })+ }
+        impl $trat for f64 { $(fn $name(self $(, $arg: Self)?) -> Self { self.$name($($arg)?) })+ }
+        impl<T: FastFloat + Trig + Rounding + Log> $trat for FFloat<T> {
+            $(
+                #[doc = include_str!("ffloat_safety_notice.md")]
+                fn $name(self $(, $arg: Self)?) -> Self { unsafe { FFloat::new(self.deref().$name($(*$arg)?)) } }
+            )+
+        }
     };
 }
 
-simp!["Trigonometry functions" trait Trig with sin, asin, sinh, asinh, cos, acos, cosh, acosh, tan, atan, tanh, atanh];
+simp!["Trigonometry functions" trait Trig with sin, asin, sinh, asinh, cos, acos, cosh, acosh, tan, atan, atan2(other), tanh, atanh];
 simp!["Rounding functions" trait Rounding with floor, ceil, round];
+simp!["Logarithm functions" trait Log with log(base), log2, log10, ln];
 
 macro_rules! ctor {
     ($for:ty) => {
@@ -85,7 +91,7 @@ pub trait Constructors {
 ///
 /// Do note that the implementations of these functions are provided by std.
 /// These functions are not likely to be faster than the std counterparts, unless the implementation is software provided and can benefit from fast math.
-pub trait FloatMethods {
+pub trait FloatMethods: Trig + Rounding + Log {
     /// Refer to [`f32::trunc`]
     fn trunc(self) -> Self;
 
@@ -113,12 +119,6 @@ pub trait FloatMethods {
     /// Refer to [`f32::exp2`]
     fn exp2(self) -> Self;
 
-    /// Refer to [`f32::ln`]
-    fn ln(self) -> Self;
-
-    /// Refer to [`f32::log`]
-    fn log(self, base: Self) -> Self;
-
     /// Refer to [`f32::min`]
     fn min(self, other: Self) -> Self;
 
@@ -140,8 +140,6 @@ pub trait Float<F>:
     + PartialOrd
     + PartialOrd<F>
     + Copy
-    + Trig
-    + Rounding
     + Constructors
     + FloatMethods
     + Add<Self, Output = Self>
@@ -214,12 +212,6 @@ macro_rules! impf {
             }
             fn exp2(self) -> $for {
                 self.exp2()
-            }
-            fn ln(self) -> $for {
-                self.ln()
-            }
-            fn log(self, base: Self) -> Self {
-                self.log(base)
             }
             fn min(self, other: Self) -> Self {
                 self.min(other)
@@ -307,14 +299,6 @@ impl<F: FloatMethods + FastFloat + Float<F>> FloatMethods for FFloat<F> {
         unsafe { Self::new(self.0.hypot(*other)) }
     }
     reuse!(fn exp2);
-    reuse!(fn ln);
-
-    /// Refer to [`f32::log`]
-    #[doc = include_str!("ffloat_safety_notice.md")]
-    fn log(self, base: Self) -> Self {
-        self.check();
-        unsafe { Self::new(self.0.log(*base)) }
-    }
 
     /// Refer to [`f32::min`]
     #[doc = include_str!("ffloat_safety_notice.md")]
