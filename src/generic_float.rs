@@ -38,8 +38,33 @@ simp!["Trigonometry functions" trait Trig with sin, asin, sinh, asinh, cos, acos
 simp!["Rounding functions" trait Rounding with floor, ceil, round];
 simp!["Logarithm functions" trait Log with log(base), log2, log10, ln];
 
+/// Float constants.
+pub trait Constants {
+    /// returns π
+    #[doc = include_str!("refer.md")]
+    unsafe fn π() -> Self;
+    /// returns ε
+    #[doc = include_str!("refer.md")]
+    unsafe fn ε() -> Self;
+    /// returns E (euler's number)
+    #[doc = include_str!("refer.md")]
+    unsafe fn e() -> Self;
+}
+
 macro_rules! ctor {
-    ($for:ty) => {
+    ($for:ident) => {
+        impl Constants for $for {
+            unsafe fn π() -> $for {
+                std::$for::consts::PI
+            }
+            unsafe fn e() -> $for {
+                std::$for::consts::E
+            }
+            unsafe fn ε() -> $for {
+                $for::EPSILON
+            }
+        }
+
         impl Constructors for $for {
             /// Returns 0. This function is safe to call.
             unsafe fn zero() -> $for {
@@ -133,6 +158,7 @@ pub trait FloatAlone:
     + PartialOrd
     + Copy
     + Constructors
+    + Constants
     + FloatMethods
     + Add<Self, Output = Self>
     + Sub<Self, Output = Self>
@@ -154,6 +180,7 @@ impl<
             + Copy
             + Constructors
             + FloatMethods
+            + Constants
             + Add<T, Output = T>
             + Sub<T, Output = T>
             + Mul<T, Output = T>
@@ -179,32 +206,17 @@ impl<
 /// These functions are not marked `unsafe`, as the entire [`FFloat`] type is essentially unsafe.
 /// Calling these functions on a [`f32`] is perfectly safe, even the `unsafe` marked functions (although theres not much point in doing so).
 pub trait Float<F>:
-    PartialEq
-    + PartialOrd
-    + PartialOrd<F>
-    + Copy
-    + Constructors
-    + FloatMethods
-    + Add<Self, Output = Self>
+    PartialOrd<F>
+    + FloatAlone
     + Add<F, Output = Self>
-    + Sub<Self, Output = Self>
     + Sub<F, Output = Self>
-    + Mul<Self, Output = Self>
     + Mul<F, Output = Self>
-    + Rem<Self, Output = Self>
     + Rem<F, Output = Self>
-    + Div<Self, Output = Self>
-    + Neg<Output = Self>
     + Div<F, Output = Self>
-    + AddAssign<Self>
     + AddAssign<F>
-    + SubAssign<Self>
     + SubAssign<F>
-    + MulAssign<Self>
     + MulAssign<F>
-    + DivAssign<Self>
     + DivAssign<F>
-    + RemAssign<Self>
     + RemAssign<F>
 where
     Self: Sized,
@@ -269,6 +281,24 @@ macro_rules! impf {
 impf!(f32);
 impf!(f64);
 
+impl<F: FastFloat + Constants> Constants for FFloat<F> {
+    /// Create a new [`FFloat`] representing the machine epsilon.
+    #[doc = include_str!("ffloat_safety_noconstr.md")]
+    unsafe fn ε() -> Self {
+        Self::new(F::ε())
+    }
+    /// Create a new [`FFloat`] representing π.
+    #[doc = include_str!("ffloat_safety_noconstr.md")]
+    unsafe fn π() -> Self {
+        Self::new(F::π())
+    }
+    /// Create a new [`FFloat`] representing eulers number.
+    #[doc = include_str!("ffloat_safety_noconstr.md")]
+    unsafe fn e() -> Self {
+        Self::new(F::e())
+    }
+}
+
 impl<F: FastFloat + Constructors> Constructors for FFloat<F> {
     /// Create a new [`FFloat`] representing `0.0`.
     #[doc = include_str!("ffloat_safety_noconstr.md")]
@@ -280,12 +310,12 @@ impl<F: FastFloat + Constructors> Constructors for FFloat<F> {
     unsafe fn one() -> Self {
         Self::new(F::one())
     }
-    /// Create a new [`FFloat`] representing the minimum value for the inner float..
+    /// Create a new [`FFloat`] representing the minimum value for the inner float.
     #[doc = include_str!("ffloat_safety_noconstr.md")]
     unsafe fn min() -> Self {
         Self::new(F::min())
     }
-    /// Create a new [`FFloat`] representing the maximum value for the inner float..
+    /// Create a new [`FFloat`] representing the maximum value for the inner float.
     #[doc = include_str!("ffloat_safety_noconstr.md")]
     unsafe fn max() -> Self {
         Self::new(F::max())

@@ -9,7 +9,12 @@
 //! ```
 #![feature(core_intrinsics)]
 #![warn(clippy::pedantic, clippy::dbg_macro, missing_docs)]
-#![allow(clippy::return_self_not_must_use)]
+#![allow(
+    clippy::return_self_not_must_use,
+    mixed_script_confusables,
+    clippy::inline_always,
+    clippy::doc_markdown
+)]
 use core::cmp::{Ordering, PartialEq, PartialOrd};
 use core::ops::{
     Add as add, AddAssign as add_assign, Deref, DerefMut, Div as div, DivAssign as div_assign,
