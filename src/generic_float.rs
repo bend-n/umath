@@ -126,6 +126,49 @@ pub trait FloatMethods: Trig + Rounding + Log {
     fn max(self, other: Self) -> Self;
 }
 
+/// Completely stand-alone [`Float`].
+/// This is comparable to something like [num_traits::Float](https://docs.rs/num-traits/latest/num_traits/float/trait.Float.html).
+pub trait FloatAlone:
+    PartialEq
+    + PartialOrd
+    + Copy
+    + Constructors
+    + FloatMethods
+    + Add<Self, Output = Self>
+    + Sub<Self, Output = Self>
+    + Mul<Self, Output = Self>
+    + Rem<Self, Output = Self>
+    + Div<Self, Output = Self>
+    + Neg<Output = Self>
+    + AddAssign<Self>
+    + SubAssign<Self>
+    + MulAssign<Self>
+    + DivAssign<Self>
+    + RemAssign<Self>
+{
+}
+
+impl<
+        T: PartialEq
+            + PartialOrd
+            + Copy
+            + Constructors
+            + FloatMethods
+            + Add<T, Output = T>
+            + Sub<T, Output = T>
+            + Mul<T, Output = T>
+            + Rem<T, Output = T>
+            + Div<T, Output = T>
+            + Neg<Output = T>
+            + AddAssign<T>
+            + SubAssign<T>
+            + MulAssign<T>
+            + DivAssign<T>
+            + RemAssign<T>,
+    > FloatAlone for T
+{
+}
+
 /// Generic float trait, implemented by {[`FFloat`], [`f32`], [`f64`]}. Takes a "base" argument, intended to be set to {[`f32`], [`f64`]}.
 /// The main purpose of this is to be taken (generically) by optionally fast functions.
 ///
