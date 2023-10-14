@@ -80,58 +80,12 @@ pub trait Constructors {
     unsafe fn max() -> Self;
 }
 
-/// Generic float trait, implemented by {[`FFloat`], [`f32`], [`f64`]}.
-/// The main purpose of this is to be taken (generically) by optionally fast functions.
-///
+/// Methods on a float.
 /// If there is a method you would like to see on this trait, please open a issue.
 ///
 /// Do note that the implementations of these functions are provided by std.
 /// These functions are not likely to be faster than the std counterparts, unless the implementation is software provided and can benefit from fast math.
-///
-/// # Safety
-///
-/// Please note that calling these functions on a [`FFloat`] _may_ incur UB.
-/// These functions are not marked `unsafe`, as the entire [`FFloat`] type is essentially unsafe.
-/// Calling these functions on a [`f32`] is perfectly safe, even the `unsafe` marked functions (although theres not much point in doing so).
-pub trait Float<F>:
-    PartialEq
-    + PartialOrd
-    + PartialOrd<F>
-    + Copy
-    + Trig
-    + Rounding
-    + Constructors
-    + Add<Self, Output = Self>
-    + Add<F, Output = Self>
-    + Sub<Self, Output = Self>
-    + Sub<F, Output = Self>
-    + Mul<Self, Output = Self>
-    + Mul<F, Output = Self>
-    + Rem<Self, Output = Self>
-    + Rem<F, Output = Self>
-    + Div<Self, Output = Self>
-    + Neg<Output = Self>
-    + Div<F, Output = Self>
-    + AddAssign<Self>
-    + AddAssign<F>
-    + SubAssign<Self>
-    + SubAssign<F>
-    + MulAssign<Self>
-    + MulAssign<F>
-    + DivAssign<Self>
-    + DivAssign<F>
-    + RemAssign<Self>
-    + RemAssign<F>
-where
-    Self: Sized,
-{
-    /// Returns a new [`Self`] from the float.
-    #[doc = include_str!("refer.md")]
-    unsafe fn new(from: F) -> Self;
-
-    /// Returns this float
-    fn take(self) -> F;
-
+pub trait FloatMethods {
     /// Refer to [`f32::trunc`]
     fn trunc(self) -> Self;
 
@@ -172,6 +126,56 @@ where
     fn max(self, other: Self) -> Self;
 }
 
+/// Generic float trait, implemented by {[`FFloat`], [`f32`], [`f64`]}. Takes a "base" argument, intended to be set to {[`f32`], [`f64`]}.
+/// The main purpose of this is to be taken (generically) by optionally fast functions.
+///
+///
+/// # Safety
+///
+/// Please note that calling these functions on a [`FFloat`] _may_ incur UB.
+/// These functions are not marked `unsafe`, as the entire [`FFloat`] type is essentially unsafe.
+/// Calling these functions on a [`f32`] is perfectly safe, even the `unsafe` marked functions (although theres not much point in doing so).
+pub trait Float<F>:
+    PartialEq
+    + PartialOrd
+    + PartialOrd<F>
+    + Copy
+    + Trig
+    + Rounding
+    + Constructors
+    + FloatMethods
+    + Add<Self, Output = Self>
+    + Add<F, Output = Self>
+    + Sub<Self, Output = Self>
+    + Sub<F, Output = Self>
+    + Mul<Self, Output = Self>
+    + Mul<F, Output = Self>
+    + Rem<Self, Output = Self>
+    + Rem<F, Output = Self>
+    + Div<Self, Output = Self>
+    + Neg<Output = Self>
+    + Div<F, Output = Self>
+    + AddAssign<Self>
+    + AddAssign<F>
+    + SubAssign<Self>
+    + SubAssign<F>
+    + MulAssign<Self>
+    + MulAssign<F>
+    + DivAssign<Self>
+    + DivAssign<F>
+    + RemAssign<Self>
+    + RemAssign<F>
+where
+    Self: Sized,
+{
+    /// Returns a new [`Self`] from the float.
+    #[doc = include_str!("refer.md")]
+    unsafe fn new(from: F) -> Self;
+
+    /// Returns this float
+    fn take(self) -> F;
+}
+
 macro_rules! impf {
     ($for:ty) => {
         impl Float<$for> for $for {
@@ -182,6 +186,8 @@ macro_rules! impf {
             fn take(self) -> $for {
                 self
             }
+        }
+        impl FloatMethods for $for {
             fn trunc(self) -> $for {
                 self.trunc()
             }
@@ -272,7 +278,9 @@ impl<F: FastFloat + Float<F>> Float<F> for FFloat<F> {
     fn take(self) -> F {
         self.0
     }
+}
 
+impl<F: FloatMethods + FastFloat + Float<F>> FloatMethods for FFloat<F> {
     reuse!(fn trunc);
     reuse!(fn fract);
     reuse!(fn abs);
